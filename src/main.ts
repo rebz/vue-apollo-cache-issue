@@ -13,7 +13,23 @@ const httpLink = createHttpLink({
 // Create the apollo client
 const apolloClient = new ApolloClient({
   link: from([httpLink]),
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          film: {
+            keyArgs: ['id'],
+            read(existing, { args, toReference }) {
+              return existing || toReference({ __typename: 'Film', id: args.id });
+            },
+            merge(existing: unknown[], incoming: unknown[]) {
+              return incoming || existing;
+            }
+          }
+        }
+      }
+    }
+  }),
   connectToDevTools: true
 });
 
